@@ -1,0 +1,31 @@
+{
+  "name": "serverino-bot",
+  "packageManager": "yarn@3.3.1",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "dev": "tsc -w & nodemon ./dist/index.js",
+    "deploy-commands": "tsc && node ./dist/scripts/deploy-commands.js",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.47.1",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard-with-typescript": "latest",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "nodemon": "^2.0.20",
+    "prettier": "^2.8.1",
+    "tsc": "^2.0.4",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "mongoose": "^6.8.2"
+  }
+}
