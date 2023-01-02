@@ -13,6 +13,13 @@
                 "reveal": "always"
             },
             "group": "build"
+        },
+        {
+            "label": "docker run",
+            "type": "docker-run",
+            "dockerRun": {
+                "envFiles": [".env"]
+            }
         }
     ]
 }
