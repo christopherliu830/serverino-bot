@@ -60,7 +60,7 @@ export async function execute(
   async function getFollowups(oldPage: number) {
     let followup;
     try { 
-      followup = await interaction.channel?.awaitMessageComponent({ time: 5000 });
+      followup = await interaction.channel?.awaitMessageComponent();
     } catch (error) {
       await interaction.editReply({ ...cache[oldPage], components: [] });
       throw error;
