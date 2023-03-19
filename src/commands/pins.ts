@@ -62,8 +62,10 @@ export async function execute(
     try { 
       followup = await interaction.channel?.awaitMessageComponent();
     } catch (error) {
+      // If the interaction times out, remove the interactive components
+      // and exit the loop.
       await interaction.editReply({ ...cache[oldPage], components: [] });
-      throw error;
+      return;
     }
 
     if (followup?.isButton()) {
@@ -96,17 +98,7 @@ export async function execute(
     await getFollowups(page);
   }
 
-  try {
-    await getFollowups(page);
-  } catch (error) {
-    // No interactions received within timeout
-    if (
-      !(error instanceof DiscordjsError) ||
-      error.code !== DiscordjsErrorCodes.InteractionCollectorError
-    ) {
-      console.log(error);
-    }
-  }
+  await getFollowups(page);
 }
 
 async function getPins(skip: number, user?: User | null) {
