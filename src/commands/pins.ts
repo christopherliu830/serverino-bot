@@ -55,11 +55,16 @@ export async function execute(
   await interaction.editReply(cache[0]);
 
   // Recursive function to change pages
-  // Loop is broken out of once an error is thrown (timeout)
+  // interaction.channel.awaitMessageComponent will throw after the timeout
+  // which will break out of the async recursive loop.
   async function getFollowups(oldPage: number) {
-    const followup = await interaction.channel?.awaitMessageComponent({
-      time: 5000
-    });
+    let followup;
+    try { 
+      followup = await interaction.channel?.awaitMessageComponent({ time: 5000 });
+    } catch (error) {
+      await interaction.editReply({ ...cache[oldPage], components: [] });
+      throw error;
+    }
 
     if (followup?.isButton()) {
       await followup.deferUpdate();
@@ -80,7 +85,7 @@ export async function execute(
           content = `**Page ${page + 1}**`;
           cache[page] = { content, embeds, components };
         } catch (error) {
-          // Try again
+          // Show the old page as a fallback.
           await followup.editReply(cache[oldPage]);
           await getFollowups(oldPage);
         }
@@ -96,11 +101,9 @@ export async function execute(
   } catch (error) {
     // No interactions received within timeout
     if (
-      error instanceof DiscordjsError &&
-      error.code === DiscordjsErrorCodes.InteractionCollectorError
+      !(error instanceof DiscordjsError) ||
+      error.code !== DiscordjsErrorCodes.InteractionCollectorError
     ) {
-      return;
-    } else {
       console.log(error);
     }
   }
