@@ -44,15 +44,13 @@ export async function execute(
 
   const pins = await getPins(0, user);
 
-  const cache: Record<number, PinnedMessageResponsePage> = {};
-
   const content = `**Page ${page + 1}**`;
   const embeds = await buildEmbeds(pins, interaction);
   const components = buildActions(page);
 
-  cache[0] = { content, embeds, components };
+  setCachedPage(user, page, { content, embeds, components});
 
-  await interaction.editReply(cache[0]);
+  await interaction.editReply(getCachedPage(user, 0));
 
   // Recursive function to change pages
   // interaction.channel.awaitMessageComponent will throw after the timeout
@@ -64,35 +62,33 @@ export async function execute(
     } catch (error) {
       // If the interaction times out, remove the interactive components
       // and exit the loop.
-      await interaction.editReply({ ...cache[oldPage], components: [] });
+      await interaction.editReply({ ...getCachedPage(user, oldPage), components: [] });
       return;
     }
 
-    if (followup?.isButton()) {
+    if (followup?.isButton() && followup.message.interaction?.id === interaction.id) {
       await followup.deferUpdate();
       await followup.editReply({ content: "Loading...", components: [] });
 
-      const page = parseInt(followup.customId) || 0;
+      const pageNumber = parseInt(followup.customId) || 0;
+      const page = getCachedPage(user, pageNumber);
 
-      let content, embeds, components;
-      if (cache[page]) {
-        content = cache[page].content;
-        embeds = cache[page].embeds;
-        components = cache[page].components;
-      } else {
+      if (!page) {
         try {
           const pins = await getPins(parseInt(followup.customId), user);
-          embeds = await buildEmbeds(pins, interaction);
-          components = buildActions(page);
-          content = `**Page ${page + 1}**`;
-          cache[page] = { content, embeds, components };
+          setCachedPage(user, pageNumber, {
+            embeds:  await buildEmbeds(pins, interaction),
+            components:  buildActions(pageNumber),
+            content: `**Page ${pageNumber + 1}**`,
+          });
         } catch (error) {
           // Show the old page as a fallback.
-          await followup.editReply(cache[oldPage]);
+          await followup.editReply(getCachedPage(user, oldPage));
           await getFollowups(oldPage);
         }
       }
-      await followup.editReply(cache[page]);
+
+      await followup.editReply(getCachedPage(user, pageNumber));
     }
 
     await getFollowups(page);
@@ -179,4 +175,14 @@ function buildActions(page: number) {
         .setEmoji("➡️")
     )
   ];
+}
+
+const cache: Record<string, PinnedMessageResponsePage> = {};
+
+function getCachedPage(user: User | null, page: number) {
+  return cache[`${user}${page}`];
+}
+
+function setCachedPage(user: User | null, pageNumber: number, page: PinnedMessageResponsePage) {
+  cache[`${user}${pageNumber}`] = page;
 }
