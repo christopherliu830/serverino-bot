@@ -8,9 +8,7 @@ import {
   GuildBasedChannel,
   messageLink,
   SlashCommandBuilder,
-  User,
-  DiscordjsError,
-  DiscordjsErrorCodes
+  User
 } from "discord.js";
 import { FilterQuery } from "mongoose";
 import { PinnedMessage, PinnedMessageType } from "../models/pinned-message";
