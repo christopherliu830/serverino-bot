@@ -146,15 +146,26 @@ function buildEmbed(
     if (channel != null && channel.isTextBased()) {
       const message = await channel.messages.fetch(pin.messageId);
       const link = messageLink(channel.id, message.id);
+      const [image] = message.attachments.values();
 
-      return new EmbedBuilder()
+      const embedBuilder = new EmbedBuilder()
         .setAuthor({
           name: message.author.username,
           iconURL: message.author.avatarURL() ?? undefined,
           url: link
         })
-        .setDescription(message.content)
         .setTimestamp(message.createdTimestamp);
+
+      if (message.content) {
+        embedBuilder.setDescription(message.content)
+      }
+
+      
+      if (image) {
+        embedBuilder.setImage(image.url);
+      }
+      
+      return embedBuilder;
     }
   };
 }
